@@ -33,11 +33,11 @@
     </form>
     
     <div class="text-center">
-        <button class="btn btn-primary text-center" type="button">
-            Importar Negociações
+        <button class="btn btn-primary text-center" type="button" onClick={negotiationController.importNegotiations()}>
+            Import Negotiations
         </button>
-        <button class="btn btn-primary text-center" type="button">
-            Apagar
+        <button class="btn btn-primary text-center" type="button" onClick={negotiationController.clear()}>
+            Clear
         </button>
     </div> 
     <br>
@@ -53,6 +53,10 @@
     <script src="js/app/views/MessageView.js"></script>
     <script src="js/app/controllers/NegotiationController.js"></script>
     <script src="js/app/helpers/DateHelper.js"></script>
+    <script src="js/app/services/ProxyFactory.js"></script>
+    <script src="js/app/helpers/Bind.js"></script>
+    <script src="js/app/services/NegotiationService.js"></script>
+    <script src="js/app/services/HttpService.js"></script>
     <script>
         const negotiationController = new NegotiationController();
     </script>

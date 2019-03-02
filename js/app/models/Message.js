@@ -1,7 +1,15 @@
 class Message {
     
     constructor(text = "") {
-        this.text = text;
+        this._text = text;
+    }
+
+    set text(text) {
+        this._text = text;
+    }
+
+    get text() {
+        return this._text;
     }
 
 }

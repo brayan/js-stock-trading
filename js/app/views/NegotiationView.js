@@ -34,7 +34,7 @@ class NegotiationView extends BaseView {
             <tfoot>
                 <td colspan="3"></td>
                 <td>
-                ${negotiationList.negotiations.reduce((total, negotiation) => (total + negotiation.calculateVolume()), 0.0)}
+                ${negotiationList.calculateVolume()}
                 </td>
             </tfoot>
         </table> 
