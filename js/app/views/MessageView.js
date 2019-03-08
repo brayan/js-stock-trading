@@ -1,4 +1,6 @@
-class MessageView extends BaseView {
+import BaseView from "./BaseView.js";
+
+export default class MessageView extends BaseView {
 
     constructor(element) {
         super(element);

@@ -1,4 +1,14 @@
-class NegotiationController {
+import DateHelper from "../helpers/DateHelper.js";
+import Bind from "../helpers/Bind.js";
+import NegotiationList from "../models/NegotiationList.js";
+import Message from "../models/Message.js";
+import Negotiation from "../models/Negotiation.js";
+import NegotiationRepository from "../repository/NegotiationRepository.js";
+import NegotiationService from "../services/NegotiationService.js";
+import MessageView from "../views/MessageView.js";
+import NegotiationView from "../views/NegotiationView.js";
+
+export default class NegotiationController {
 
     constructor() {
         const $ = document.querySelector.bind(document);
@@ -7,40 +17,61 @@ class NegotiationController {
         this.inputValue = $("#value");
         this.negotiationList = new Bind(new NegotiationList(), new NegotiationView($("#negotiationView")), "clear", "addNegotiation");
         this.message = new Bind(new Message(), new MessageView($("#messageView")), "text");
+        this.repository = new NegotiationRepository();
+
+        this.setup();
+    }
+
+    setup() {
+        this.loadNegotiations();
+        setInterval(() => {
+            this.importNegotiations();
+        }, 3000);
     }
 
     add(event) {
         event.preventDefault();
 
         const negotiation = this.createNegotiation();
-        this.negotiationList.addNegotiation(negotiation);
-        this.message.text = "Negociação adicionada com sucesso";
-        this.clearForm();
+
+        this.repository.add(negotiation).then(() => {
+            this.negotiationList.addNegotiation(negotiation);
+            this.message.text = "Negociação adicionada com sucesso";
+            this.clearForm();
+        })
+            .catch(error => {
+                this.message.text = error;
+            });
     }
 
     clear() {
-        this.negotiationList.clear();
-        this.message.text = "Negociações apagadas com sucesso!";
+        this.repository.deleteAll()
+            .then(() => {
+                this.negotiationList.clear();
+                this.message.text = "Negociações apagadas com sucesso!";
+            })
+            .catch(error => {
+                this.message.text = error;
+            });
+    }
+
+    loadNegotiations() {
+        this.repository.getAll()
+            .then(negotiations => {
+                negotiations.forEach(negotiation => {
+                    this.negotiationList.addNegotiation(negotiation);
+                });
+            })
+            .catch(error => {
+                this.message.text = error;
+            });
     }
 
     importNegotiations() {
         const service = new NegotiationService();
-        Promise.all([
-            service.getWeeklyNegotiations(),
-            service.getLastWeeklyNegotiations(),
-            service.getLastLastWeeklyNegotiations()
-        ]).then(negotiations => {
-            const myNewNegotiations = negotiations.reduce((flatArray, array) => flatArray.concat(array), []);
-            this.onSuccessGetWeeklyNegotiations(myNewNegotiations);
-        })
-            .catch(error => this.onErrorGetWeeklyNegotiations(error));
-
-        /*service.getWeeklyNegotiations()
+        service.importNegotiations(this.negotiationList.negotiations)
             .then(negotiations => this.onSuccessGetWeeklyNegotiations(negotiations))
             .catch(error => this.onErrorGetWeeklyNegotiations(error));
-        service.getWeeklyNegotiations(this.onErrorGetWeeklyNegotiations.bind(this), this.onSuccessGetWeeklyNegotiations.bind(this));
-        service.getLastWeeklyNegotiations(this.onErrorGetWeeklyNegotiations.bind(this), this.onSuccessGetWeeklyNegotiations.bind(this));
-        service.getLastLastWeeklyNegotiations(this.onErrorGetWeeklyNegotiations.bind(this), this.onSuccessGetWeeklyNegotiations.bind(this));*/
     }
 
     onSuccessGetWeeklyNegotiations(negotiations) {
@@ -53,7 +84,9 @@ class NegotiationController {
 
     createNegotiation() {
         const newDate = DateHelper.parseTextToDate(this.inputDate.value);
-        return new Negotiation(newDate, this.inputNumberOfStocks.value, this.inputValue.value);
+        const numberOfStocks = parseInt(this.inputNumberOfStocks.value);
+        const value = parseFloat(this.inputValue.value);
+        return new Negotiation(newDate, numberOfStocks, value);
     }
 
     clearForm() {

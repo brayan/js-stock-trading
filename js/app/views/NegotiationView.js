@@ -1,4 +1,7 @@
-class NegotiationView extends BaseView {
+import BaseView from "./BaseView.js";
+import DateHelper from "../helpers/DateHelper.js";
+
+export default class NegotiationView extends BaseView {
 
     constructor(element) {
         super(element);

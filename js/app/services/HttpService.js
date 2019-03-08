@@ -1,20 +1,25 @@
-class HttpService {
+export default class HttpService {
 
     static get(url) {
-        return new Promise((resolve, reject) => {
-            const request = new XMLHttpRequest();
-            request.open("GET", url);
-            request.onreadystatechange = () => {
-                if (request.readyState == 4) {
-                    if (request.status == 200) {
-                        resolve(JSON.parse(request.responseText));
-                    } else {
-                        reject(request.responseText);
-                    }
-                }
-            };
-
-            request.send();
-        });
+        return fetch(url)
+            .then(response => HttpService.handleErrors(response))
+            .then(response => response.json());
     }
+
+    static post(url, data) {
+        return fetch(url, {
+            headers: { "Content-type": "application/json" },
+            method: "post",
+            body: JSON.stringify(data)
+        }).then(response => HttpService.handleErrors(response));
+    }
+
+    static handleErrors(response) {
+        if (response.ok) {
+            return response;
+        } else {
+            throw new Error(response.statusText);
+        }
+    }
+
 }

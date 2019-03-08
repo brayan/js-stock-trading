@@ -1,4 +1,4 @@
-class BaseView {
+export default class BaseView {
     
     constructor(element) {
         this.element = element;

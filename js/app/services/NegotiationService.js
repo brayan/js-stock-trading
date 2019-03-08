@@ -1,4 +1,7 @@
-class NegotiationService {
+import HttpService from "./HttpService.js";
+import Negotiation from "../models/Negotiation.js";
+
+export default class NegotiationService {
 
     getWeeklyNegotiations() {
         const url = "http://localhost:3000/negociacoes/semana";
@@ -18,6 +21,24 @@ class NegotiationService {
         return getNegotiationsFromApi(url, errorMessage);
     }
 
+    getAll() {
+        return Promise.all([
+            this.getWeeklyNegotiations(),
+            this.getLastWeeklyNegotiations(),
+            this.getLastLastWeeklyNegotiations()
+        ]).then(negotiations =>
+            negotiations.reduce((flatArray, array) => flatArray.concat(array), []));
+    }
+
+    importNegotiations(currentList) {
+        return this.getAll()
+            .then(negotiations =>
+                negotiations.filter(negotiation =>
+                    !currentList.some(negotiationExistent =>
+                        JSON.stringify(negotiation) == JSON.stringify(negotiationExistent)))
+            );
+    }
+
 }
 
 const getNegotiationsFromApi = (url, errorMessage) => {
@@ -26,10 +47,10 @@ const getNegotiationsFromApi = (url, errorMessage) => {
             const negotiations = jsonResponse.map(object => new Negotiation(new Date(object.data), object.quantidade, object.valor));
             resolve(negotiations);
         })
-        .catch(error => {
-            console.log(error);
-            reject(errorMessage);
-        });
+            .catch(error => {
+                console.log(error);
+                reject(errorMessage);
+            });
     })
-    
+
 }

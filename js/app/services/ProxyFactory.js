@@ -1,12 +1,13 @@
-class ProxyFactory {
+export default class ProxyFactory {
 
     static create(object, props, action) {
         return new Proxy(object, {
             get(target, prop, receiver) {
                 if (props.includes(prop) && ProxyFactory.isFunction(target[prop])) {
                     return function () {
-                        Reflect.apply(target[prop], target, arguments);
-                        return action(target);
+                        const result = Reflect.apply(target[prop], target, arguments);
+                        action(target);
+                        return result;
                     }
                 }
 
@@ -14,10 +15,11 @@ class ProxyFactory {
             },
 
             set(target, prop, value, receiver) {
+                const result = Reflect.set(target, prop, value, receiver);
                 if (props.includes(prop)) {
                     action(target);
                 }
-                return Reflect.set(target, prop, value, receiver);
+                return result;
             }
         });
     }
